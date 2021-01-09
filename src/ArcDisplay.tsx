@@ -1,6 +1,6 @@
 import {Arc} from "./gpx-helpers";
 import React from "react";
-import {Grid, makeStyles, TextField} from "@material-ui/core";
+import {makeStyles} from "@material-ui/core";
 import {toDmsString} from "./dms";
 
 export interface ArcDisplayProps {
