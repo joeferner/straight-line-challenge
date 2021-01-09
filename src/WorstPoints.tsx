@@ -1,5 +1,5 @@
 import React from "react";
-import {Arc, calculateDistanceFromArc} from "./gpx-helpers";
+import {Arc, crossTrackDistance} from "./gpx-helpers";
 import {Gpx, GpxPoint} from "./gpx-parser";
 import {Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import {toDmsString} from "./dms";
@@ -16,6 +16,7 @@ interface WorstPoint {
     time: string;
     latLon: string;
     error: string;
+    errorVal: number;
     gpxPoint: GpxPoint;
 }
 
@@ -28,16 +29,17 @@ export function WorstPoints(props: WorstPointsProps) {
         let points: WorstPoint[] = [];
         for (const track of props.gpx.tracks) {
             for (const point of track.points) {
-                const d = calculateDistanceFromArc(point, props.arc);
+                const d = crossTrackDistance(point, props.arc);
                 if (d > worstDistance) {
                     points.push({
                         time: point.time.toISOString(),
                         latLon: toDmsString(point.lat, point.lon),
                         error: d.toFixed(1),
+                        errorVal: d,
                         gpxPoint: point
                     });
                     points = points.sort((a, b) => {
-                        return a.error === b.error ? 0 : (a.error > b.error ? -1 : 1);
+                        return a.errorVal === b.errorVal ? 0 : (a.errorVal > b.errorVal ? -1 : 1);
                     });
                     points = points.slice(0, numberOfPoints);
                 }
@@ -67,18 +69,26 @@ export function WorstPoints(props: WorstPointsProps) {
                         && props.selectedWorstPoint.lon === pt.gpxPoint.lon) {
                         selected = true;
                     }
-                    return (<TableRow
+                    return (<WorstPointsTableRow
                         key={pt.time + pt.latLon}
-                        onClick={(evt) => handleRowClick(pt)}
+                        pt={pt}
                         selected={selected}
-                        style={{cursor: 'pointer'}}
-                    >
-                        <TableCell>{pt.time}</TableCell>
-                        <TableCell>{pt.latLon}</TableCell>
-                        <TableCell>{pt.error}m</TableCell>
-                    </TableRow>);
+                        onRowClick={handleRowClick}
+                    />)
                 })}
             </TableBody>
         </Table>
     </TableContainer>);
+}
+
+function WorstPointsTableRow(props: { pt: WorstPoint, selected: boolean, onRowClick: (pt: WorstPoint) => void }) {
+    return (<TableRow
+        onClick={(evt: any) => props.onRowClick(props.pt)}
+        selected={props.selected}
+        style={{cursor: 'pointer'}}
+    >
+        <TableCell>{props.pt.time}</TableCell>
+        <TableCell>{props.pt.latLon}</TableCell>
+        <TableCell>{props.pt.error}m</TableCell>
+    </TableRow>);
 }

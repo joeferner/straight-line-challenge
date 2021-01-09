@@ -75,10 +75,10 @@ export function Map(props: MapProps) {
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {bestArcPositions ? (<Polyline pathOptions={{color: 'red'}} positions={bestArcPositions}/>) : null}
-        {trackPositions ? (<Polyline pathOptions={{color: 'blue'}} positions={trackPositions}/>) : null}
         {worstPointPolyPositions
             ? (<Polyline pathOptions={{color: 'green'}} positions={worstPointPolyPositions}/>)
             : null}
+        {trackPositions ? (<Polyline pathOptions={{color: 'blue'}} positions={trackPositions}/>) : null}
+        {bestArcPositions ? (<Polyline pathOptions={{color: 'red'}} positions={bestArcPositions}/>) : null}
     </MapContainer>);
 }
