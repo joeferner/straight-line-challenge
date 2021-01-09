@@ -1,4 +1,5 @@
 import {Gpx, GpxPoint} from "./gpx-parser";
+import {LineUtil} from "leaflet";
 
 const EARTH_RADIUS = 6371;
 

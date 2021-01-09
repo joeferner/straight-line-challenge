@@ -1,6 +1,6 @@
 import React from "react";
 import {Arc, calculateDistanceFromArc} from "./gpx-helpers";
-import {Gpx} from "./gpx-parser";
+import {Gpx, GpxPoint} from "./gpx-parser";
 import {Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import {toDmsString} from "./dms";
 
@@ -8,12 +8,15 @@ export interface WorstPointsProps {
     arc: Arc;
     gpx: Gpx;
     numberOfPoints?: number;
+    selectedWorstPoint?: GpxPoint;
+    onPointClick: (pt: GpxPoint) => void;
 }
 
 interface WorstPoint {
     time: string;
     latLon: string;
     error: string;
+    gpxPoint: GpxPoint;
 }
 
 export function WorstPoints(props: WorstPointsProps) {
@@ -30,7 +33,8 @@ export function WorstPoints(props: WorstPointsProps) {
                     points.push({
                         time: point.time.toISOString(),
                         latLon: toDmsString(point.lat, point.lon),
-                        error: d.toFixed(1)
+                        error: d.toFixed(1),
+                        gpxPoint: point
                     });
                     points = points.sort((a, b) => {
                         return a.error === b.error ? 0 : (a.error > b.error ? -1 : 1);
@@ -41,6 +45,10 @@ export function WorstPoints(props: WorstPointsProps) {
         }
         setPoints(points);
     }, [props.arc, props.gpx, numberOfPoints]);
+
+    const handleRowClick = React.useCallback((pt) => {
+        props.onPointClick(pt.gpxPoint);
+    }, [props.onPointClick]);
 
     return (<TableContainer component={Paper} style={{flexGrow: 1, display: 'flex'}}>
         <Table stickyHeader={true}>
@@ -53,7 +61,18 @@ export function WorstPoints(props: WorstPointsProps) {
             </TableHead>
             <TableBody>
                 {points.map((pt) => {
-                    return (<TableRow key={pt.time + pt.latLon}>
+                    let selected = false;
+                    if (props.selectedWorstPoint
+                        && props.selectedWorstPoint.lat === pt.gpxPoint.lat
+                        && props.selectedWorstPoint.lon === pt.gpxPoint.lon) {
+                        selected = true;
+                    }
+                    return (<TableRow
+                        key={pt.time + pt.latLon}
+                        onClick={(evt) => handleRowClick(pt)}
+                        selected={selected}
+                        style={{cursor: 'pointer'}}
+                    >
                         <TableCell>{pt.time}</TableCell>
                         <TableCell>{pt.latLon}</TableCell>
                         <TableCell>{pt.error}m</TableCell>
