@@ -10,12 +10,9 @@ function App() {
         setGpx(gpx);
     }, [setGpx]);
 
-    return (<div className="App">
-        {gpx
-            ? (<MainView gpx={gpx}/>)
-            : (<DataSource onGpxChange={handleGpxChange}/>)
-        }
-    </div>);
+    return gpx
+        ? (<MainView gpx={gpx}/>)
+        : (<DataSource onGpxChange={handleGpxChange}/>);
 }
 
 export default App;

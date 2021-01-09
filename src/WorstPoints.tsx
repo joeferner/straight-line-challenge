@@ -42,8 +42,8 @@ export function WorstPoints(props: WorstPointsProps) {
         setPoints(points);
     }, [props.arc, props.gpx, numberOfPoints]);
 
-    return (<TableContainer component={Paper}>
-        <Table>
+    return (<TableContainer component={Paper} style={{flexGrow: 1, display: 'flex'}}>
+        <Table stickyHeader={true}>
             <TableHead>
                 <TableRow>
                     <TableCell>Time</TableCell>

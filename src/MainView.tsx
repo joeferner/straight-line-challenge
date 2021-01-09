@@ -17,17 +17,19 @@ export function MainView(props: MainViewProps) {
     }, [props.gpx]);
 
     const worstPointsArc = bestArc;
-    return (<Grid container>
-        <Grid item xs={12}>
+    return (<div style={{display: 'flex', flexDirection: 'column', flexGrow: 1}}>
+        <div>
             <Typography variant="h6">Best Arc</Typography>
             <ArcDisplay arc={bestArc}/>
-        </Grid>
-        <Grid item xs={6}>
-            <Typography variant="h6">Worst Points</Typography>
-            {worstPointsArc ? (<WorstPoints arc={worstPointsArc} gpx={props.gpx}/>) : null}
-        </Grid>
-        <Grid item xs={6}>
-            Map
-        </Grid>
-    </Grid>);
+        </div>
+        <div style={{display: 'flex', flexGrow: 1, overflow: 'hidden'}}>
+            <div style={{display: 'flex', flexDirection: 'column', flex: '50%'}}>
+                <Typography variant="h6">Worst Points</Typography>
+                {worstPointsArc ? (<WorstPoints arc={worstPointsArc} gpx={props.gpx}/>) : null}
+            </div>
+            <div style={{flex: '50%'}}>
+                <Typography variant="h6">Map</Typography>
+            </div>
+        </div>
+    </div>);
 }
