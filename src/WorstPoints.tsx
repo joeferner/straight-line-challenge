@@ -27,7 +27,7 @@ export function WorstPoints(props: WorstPointsProps) {
         let worstDistance = 0;
         let points: WorstPoint[] = [];
         for (const point of props.points) {
-            const d = crossTrackDistance(point, props.arc);
+            const d = Math.abs(crossTrackDistance(point, props.arc));
             if (d > worstDistance) {
                 points.push({
                     time: point.time?.toISOString() || 'unknown',
@@ -45,8 +45,8 @@ export function WorstPoints(props: WorstPointsProps) {
         setPoints(points);
     }, [props.arc, props.points, numberOfPoints]);
 
-    const handleRowClick = React.useCallback((pt) => {
-        props.onPointClick(pt.gpxPoint);
+    const handleRowClick = React.useCallback((pt: WorstPoint) => {
+        props.onPointClick(pt.point);
     }, [props.onPointClick]);
 
     return (<TableContainer component={Paper} style={{flexGrow: 1, display: 'flex'}}>

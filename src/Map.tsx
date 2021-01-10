@@ -30,9 +30,6 @@ export function Map(props: MapProps) {
         let bounds: LatLngBounds | undefined = undefined;
         const positions: LatLngExpression[] = [];
         for (const point of props.points) {
-            if (isNaN(point.lat) || isNaN(point.lon)) {
-                continue;
-            }
             const pt: [number, number] = [point.lat, point.lon];
             positions.push(pt);
             if (bounds) {

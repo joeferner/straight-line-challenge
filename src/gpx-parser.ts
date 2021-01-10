@@ -102,8 +102,11 @@ export function gpxParse(str: string): Gpx {
 export function gpxGetPoints(gpx: Gpx): Point[] {
     const results = [];
     for (const track of gpx.tracks) {
-        for (const point of track.points) {
-            results.push(point);
+        for (const pt of track.points) {
+            if (isNaN(pt.lat) || isNaN(pt.lon)) {
+                continue;
+            }
+            results.push(pt);
         }
     }
     return results;

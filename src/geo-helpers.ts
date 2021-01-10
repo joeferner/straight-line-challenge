@@ -16,8 +16,7 @@ export interface Arc {
 export function calculateBestArc(points: Point[]): Arc {
     const pt1 = points[0];
     const pt2 = points[points.length - 1];
-
-    return {
+    const firstGuess = {
         start: {
             lat: pt1.lat,
             lon: pt1.lon
@@ -27,6 +26,75 @@ export function calculateBestArc(points: Point[]): Arc {
             lon: pt2.lon
         }
     }
+
+    function findMaxVectorFromArc(arc: Arc, points: Point[]): [number, number, number] {
+        let lat = 0;
+        let lon = 0;
+        let maxDistance = -1;
+        for (const point of points) {
+            const d = Math.abs(crossTrackDistance(point, arc));
+            if (d > maxDistance) {
+                const closestPoint = findClosestPointOnArc(arc, point);
+                lat = point.lat - closestPoint.lat;
+                lon = point.lon - closestPoint.lon;
+                maxDistance = d;
+            }
+        }
+        return [lat, lon, maxDistance];
+    }
+
+    function adjustArc(arc: Arc, div: number): { arc: Arc, error: number } {
+        const startToMidPoints = [];
+        const endToMidPoints = [];
+        for (const point of points) {
+            if (distance(point, arc.start) < distance(point, arc.end)) {
+                startToMidPoints.push(point);
+            } else {
+                endToMidPoints.push(point);
+            }
+        }
+
+        const startToMidMaxVector = findMaxVectorFromArc(arc, startToMidPoints);
+        const endToMidMaxVector = findMaxVectorFromArc(arc, endToMidPoints);
+
+        console.log('startToMidMaxVector:', startToMidMaxVector);
+        console.log('endToMidMaxVector:', endToMidMaxVector)
+
+        const dLat = arc.end.lat - arc.start.lat;
+        const dLon = arc.end.lon - arc.start.lon;
+        const guess: Arc = {
+            start: {
+                lat: arc.start.lat + (startToMidMaxVector[0] / div) - dLat,
+                lon: arc.start.lon + (startToMidMaxVector[1] / div) - dLon
+            },
+            end: {
+                lat: arc.end.lat + (endToMidMaxVector[0] / div) + dLat,
+                lon: arc.end.lon + (endToMidMaxVector[1] / div) + dLon
+            }
+        }
+        const avgDistance = (startToMidMaxVector[2] + endToMidMaxVector[2]) / 2;
+
+        return {
+            arc: {
+                start: findClosestPointOnArc(guess, pt1),
+                end: findClosestPointOnArc(guess, pt2)
+            },
+            error: avgDistance
+        };
+    }
+
+    let div = 10;
+    let results = adjustArc(firstGuess, div);
+    for (let i = 0; i < 50; i++) {
+        console.log(div, results.arc.start, results.arc.end, results.error);
+        const newResults = adjustArc(results.arc, div);
+        if (newResults.error < results.error) {
+            results = newResults;
+        } else {
+            div += 1;
+        }
+    }
+    return results.arc;
 }
 
 export function rad2deg(radians: number): number {
@@ -109,9 +177,9 @@ export function wrap360(degrees: number): number {
 export function findClosestPointOnArc(arc: Arc, pt: Point): Point {
     // binary search the arc trying to find the closest point on the arc
     // to pt.
-    function recurse(arc: Arc, pt: Point, dLast: number): Point {
+    function recurse(arc: Arc, pt: Point, dLast: number, depth: number): Point {
         const dStart = distance(arc.start, pt);
-        if (dStart > dLast - 0.0000001) {
+        if (dStart > dLast - 0.000001 || depth > 100) {
             return arc.start;
         }
         const dEnd = distance(arc.end, pt);
@@ -122,17 +190,17 @@ export function findClosestPointOnArc(arc: Arc, pt: Point): Point {
                 start: arc.start,
                 end: mid
             };
-            return recurse(newArc, pt, dMax);
+            return recurse(newArc, pt, dMax, depth + 1);
         } else {
             const newArc = {
                 start: mid,
                 end: arc.end
             };
-            return recurse(newArc, pt, dMax);
+            return recurse(newArc, pt, dMax, depth + 1);
         }
     }
 
-    return recurse(arc, pt, EARTH_RADIUS);
+    return recurse(arc, pt, EARTH_RADIUS, 0);
 }
 
 export interface FilterPointsOptions {
@@ -149,11 +217,11 @@ export function geoFilterPoints(points: Point[], options?: FilterPointsOptions):
     const results: Point[] = [];
     const bestArc = calculateBestArc(points);
     let lastPoint = points[0];
-    let lastPointDistanceFromArc = crossTrackDistance(lastPoint, bestArc);
+    let lastPointDistanceFromArc = Math.abs(crossTrackDistance(lastPoint, bestArc));
     results.push(points[0]);
     for (let i = 1; i < points.length; i++) {
         const pt = points[i];
-        const distanceFromArc = crossTrackDistance(pt, bestArc);
+        const distanceFromArc = Math.abs(crossTrackDistance(pt, bestArc));
         if (distance(lastPoint, pt) < reqOptions.minDistanceBetweenPoints
             && distanceFromArc < lastPointDistanceFromArc) {
             console.log(`skipped point: ${pt.lat}, ${pt.lon}`);
