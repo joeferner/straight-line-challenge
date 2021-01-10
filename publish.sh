@@ -7,11 +7,13 @@ GIT_ORIGIN=$(git config --get remote.origin.url)
 
 echo "BUILD_TEMP_DIR: ${BUILD_TEMP_DIR}"
 
-cp -R "${DIR}/build/" "${BUILD_TEMP_DIR}/build"
+git clone --branch gh-pages --depth 1 "${GIT_ORIGIN}" "${BUILD_TEMP_DIR}/git"
+rm -rf "${BUILD_TEMP_DIR}/git/*"
+cp -R ${DIR}/build/* "${BUILD_TEMP_DIR}/git"
 
-git clone --branch gh-pages --depth 1 "${GIT_ORIGIN}" git
-cd "${BUILD_TEMP_DIR}"
-
-ls -la
+cd "${BUILD_TEMP_DIR}/git"
+git add .
+git commit -m "publish $(date)"
+git push
 
 rm -rf "${BUILD_TEMP_DIR}"
