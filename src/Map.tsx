@@ -1,7 +1,7 @@
 import {MapContainer, TileLayer, Polyline} from "react-leaflet";
-import {Arc} from "./gpx-helpers";
+import {Arc, findClosestPointOnArc} from "./gpx-helpers";
 import React from "react";
-import {FitBoundsOptions, LatLngBounds, LatLngExpression, LineUtil, Point} from "leaflet";
+import {FitBoundsOptions, LatLngBounds, LatLngExpression} from "leaflet";
 import {Gpx, GpxPoint} from "./gpx-parser";
 
 export interface MapProps {
@@ -50,14 +50,10 @@ export function Map(props: MapProps) {
 
     React.useEffect(() => {
         if (props.selectedWorstPoint && props.bestArc) {
-            const pt = LineUtil.closestPointOnSegment(
-                new Point(props.selectedWorstPoint.lon, props.selectedWorstPoint.lat),
-                new Point(props.bestArc.start.lon, props.bestArc.start.lat),
-                new Point(props.bestArc.end.lon, props.bestArc.end.lat)
-            )
+            const pt = findClosestPointOnArc(props.bestArc, props.selectedWorstPoint);
             setWorstPointPolyPositions([
                 [props.selectedWorstPoint.lat, props.selectedWorstPoint.lon],
-                [pt.y, pt.x]
+                [pt.lat, pt.lon]
             ])
         } else {
             setWorstPointPolyPositions(undefined);

@@ -1,3 +1,5 @@
+// see http://www.movable-type.co.uk/scripts/latlong.html
+
 import {Gpx} from "./gpx-parser";
 
 const EARTH_RADIUS = 6371000;
@@ -103,4 +105,33 @@ export function wrap360(degrees: number): number {
         return degrees
     } // avoid rounding due to arithmetic ops if within range
     return (degrees % 360 + 360) % 360; // sawtooth wave p:360, a:360
+}
+
+export function findClosestPointOnArc(arc: Arc, pt: Point): Point {
+    // binary search the arc trying to find the closest point on the arc
+    // to pt.
+    function recurse(arc: Arc, pt: Point, dLast: number): Point {
+        const dStart = distance(arc.start, pt);
+        if (dStart > dLast - 0.0000001) {
+            return arc.start;
+        }
+        const dEnd = distance(arc.end, pt);
+        const dMax = Math.max(dStart, dEnd);
+        const mid = midpoint(arc.start, arc.end);
+        if (dStart < dEnd) {
+            const newArc = {
+                start: arc.start,
+                end: mid
+            };
+            return recurse(newArc, pt, dMax);
+        } else {
+            const newArc = {
+                start: mid,
+                end: arc.end
+            };
+            return recurse(newArc, pt, dMax);
+        }
+    }
+
+    return recurse(arc, pt, EARTH_RADIUS);
 }
