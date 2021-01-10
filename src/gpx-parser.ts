@@ -99,7 +99,7 @@ export function gpxParse(str: string): Gpx {
     return parser as Gpx;
 }
 
-export function gpxFilterPoints(gpx: Gpx): Point[] {
+export function gpxGetPoints(gpx: Gpx): Point[] {
     const results = [];
     for (const track of gpx.tracks) {
         for (const point of track.points) {

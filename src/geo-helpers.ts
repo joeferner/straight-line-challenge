@@ -134,3 +134,35 @@ export function findClosestPointOnArc(arc: Arc, pt: Point): Point {
 
     return recurse(arc, pt, EARTH_RADIUS);
 }
+
+export interface FilterPointsOptions {
+    minDistanceBetweenPoints?: number;
+}
+
+export const DEFAULT_FILTER_POINTS_OPTIONS: Required<FilterPointsOptions> = {
+    minDistanceBetweenPoints: 5
+};
+
+export function geoFilterPoints(points: Point[], options?: FilterPointsOptions): Point[] {
+    const reqOptions: Required<FilterPointsOptions> = {...DEFAULT_FILTER_POINTS_OPTIONS, ...options};
+
+    const results: Point[] = [];
+    const bestArc = calculateBestArc(points);
+    let lastPoint = points[0];
+    let lastPointDistanceFromArc = crossTrackDistance(lastPoint, bestArc);
+    results.push(points[0]);
+    for (let i = 1; i < points.length; i++) {
+        const pt = points[i];
+        const distanceFromArc = crossTrackDistance(pt, bestArc);
+        if (distance(lastPoint, pt) < reqOptions.minDistanceBetweenPoints
+            && distanceFromArc < lastPointDistanceFromArc) {
+            console.log(`skipped point: ${pt.lat}, ${pt.lon}`);
+            continue;
+        } else {
+            lastPointDistanceFromArc = distanceFromArc;
+            lastPoint = pt;
+            results.push(pt);
+        }
+    }
+    return results;
+}

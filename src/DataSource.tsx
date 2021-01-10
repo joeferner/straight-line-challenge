@@ -1,6 +1,6 @@
 import React, {ChangeEvent} from 'react';
-import {gpxParse, gpxFilterPoints} from "./gpx-parser";
-import {Point} from "./geo-helpers";
+import {gpxParse, gpxGetPoints} from "./gpx-parser";
+import {geoFilterPoints, Point} from "./geo-helpers";
 
 export interface DataSourceProps {
     onChange: (points: Point[]) => void;
@@ -13,7 +13,9 @@ export function DataSource(props: DataSourceProps) {
         }
         const fr = new FileReader();
         fr.onload = function () {
-            props.onChange(gpxFilterPoints(gpxParse(fr.result as string)));
+            const gpxPoints = gpxGetPoints(gpxParse(fr.result as string));
+            const points = geoFilterPoints(gpxPoints);
+            props.onChange(points);
         }
         fr.readAsText(args.currentTarget.files[0]);
     }, [props]);
