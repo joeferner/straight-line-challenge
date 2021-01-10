@@ -57,9 +57,6 @@ export function calculateBestArc(points: Point[]): Arc {
         const startToMidMaxVector = findMaxVectorFromArc(arc, startToMidPoints);
         const endToMidMaxVector = findMaxVectorFromArc(arc, endToMidPoints);
 
-        console.log('startToMidMaxVector:', startToMidMaxVector);
-        console.log('endToMidMaxVector:', endToMidMaxVector)
-
         const dLat = arc.end.lat - arc.start.lat;
         const dLon = arc.end.lon - arc.start.lon;
         const guess: Arc = {
@@ -86,7 +83,6 @@ export function calculateBestArc(points: Point[]): Arc {
     let div = 10;
     let results = adjustArc(firstGuess, div);
     for (let i = 0; i < 50; i++) {
-        console.log(div, results.arc.start, results.arc.end, results.error);
         const newResults = adjustArc(results.arc, div);
         if (newResults.error < results.error) {
             results = newResults;
