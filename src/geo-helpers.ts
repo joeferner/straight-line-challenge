@@ -230,3 +230,45 @@ export function geoFilterPoints(points: Point[], options?: FilterPointsOptions):
     }
     return results;
 }
+
+export interface Stats {
+    sum: number;
+    mean: number;
+    stdDeviation: number;
+    min: number;
+    max: number;
+    distance: number;
+}
+
+export function calculateStats(points: Point[], arc: Arc): Stats {
+    const distanceArcStartEnd = distance(arc.start, arc.end);
+    let sum = 0;
+    let min = Number.MAX_SAFE_INTEGER;
+    let max = 0;
+    const distances: number[] = [];
+    for (const point of points) {
+        const d = Math.abs(crossTrackDistance(point, arc));
+        distances.push(d);
+        sum += d;
+        min = Math.min(min, d);
+        max = Math.max(max, d);
+    }
+    const mean = sum / points.length;
+
+    function calculateStdDeviation() {
+        let sumOfSquares = 0;
+        for (const d of distances) {
+            sumOfSquares += Math.pow(d - mean, 2);
+        }
+        return Math.sqrt(sumOfSquares / distances.length);
+    }
+
+    return {
+        sum,
+        min,
+        max,
+        mean,
+        stdDeviation: calculateStdDeviation(),
+        distance: distanceArcStartEnd
+    }
+}
