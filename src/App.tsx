@@ -1,18 +1,18 @@
 import React from 'react';
 import {DataSource} from "./DataSource";
-import {Gpx} from "./gpx-parser";
 import {MainView} from "./MainView";
+import {Point} from "./geo-helpers";
 
 function App() {
-    const [gpx, setGpx] = React.useState<Gpx | undefined>(undefined);
+    const [points, setPoints] = React.useState<Point[] | undefined>(undefined);
 
-    const handleGpxChange = React.useCallback((gpx: Gpx | undefined) => {
-        setGpx(gpx);
-    }, [setGpx]);
+    const handleDataChange = React.useCallback((points: Point[]) => {
+        setPoints(points);
+    }, [setPoints]);
 
-    return gpx
-        ? (<MainView gpx={gpx}/>)
-        : (<DataSource onGpxChange={handleGpxChange}/>);
+    return points
+        ? (<MainView points={points}/>)
+        : (<DataSource onChange={handleDataChange}/>);
 }
 
 export default App;

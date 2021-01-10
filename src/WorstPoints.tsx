@@ -1,15 +1,14 @@
 import React from "react";
-import {Arc, crossTrackDistance} from "./gpx-helpers";
-import {Gpx, GpxPoint} from "./gpx-parser";
+import {Arc, crossTrackDistance, Point} from "./geo-helpers";
 import {Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import {toDmsString} from "./dms";
 
 export interface WorstPointsProps {
     arc: Arc;
-    gpx: Gpx;
+    points: Point[];
     numberOfPoints?: number;
-    selectedWorstPoint?: GpxPoint;
-    onPointClick: (pt: GpxPoint) => void;
+    selectedWorstPoint?: Point;
+    onPointClick: (pt: Point) => void;
 }
 
 interface WorstPoint {
@@ -17,7 +16,7 @@ interface WorstPoint {
     latLon: string;
     error: string;
     errorVal: number;
-    gpxPoint: GpxPoint;
+    point: Point;
 }
 
 export function WorstPoints(props: WorstPointsProps) {
@@ -27,26 +26,24 @@ export function WorstPoints(props: WorstPointsProps) {
     React.useEffect(() => {
         let worstDistance = 0;
         let points: WorstPoint[] = [];
-        for (const track of props.gpx.tracks) {
-            for (const point of track.points) {
-                const d = crossTrackDistance(point, props.arc);
-                if (d > worstDistance) {
-                    points.push({
-                        time: point.time.toISOString(),
-                        latLon: toDmsString(point.lat, point.lon),
-                        error: d.toFixed(1),
-                        errorVal: d,
-                        gpxPoint: point
-                    });
-                    points = points.sort((a, b) => {
-                        return a.errorVal === b.errorVal ? 0 : (a.errorVal > b.errorVal ? -1 : 1);
-                    });
-                    points = points.slice(0, numberOfPoints);
-                }
+        for (const point of props.points) {
+            const d = crossTrackDistance(point, props.arc);
+            if (d > worstDistance) {
+                points.push({
+                    time: point.time?.toISOString() || 'unknown',
+                    latLon: toDmsString(point.lat, point.lon),
+                    error: d.toFixed(1),
+                    errorVal: d,
+                    point: point
+                });
+                points = points.sort((a, b) => {
+                    return a.errorVal === b.errorVal ? 0 : (a.errorVal > b.errorVal ? -1 : 1);
+                });
+                points = points.slice(0, numberOfPoints);
             }
         }
         setPoints(points);
-    }, [props.arc, props.gpx, numberOfPoints]);
+    }, [props.arc, props.points, numberOfPoints]);
 
     const handleRowClick = React.useCallback((pt) => {
         props.onPointClick(pt.gpxPoint);
@@ -65,8 +62,8 @@ export function WorstPoints(props: WorstPointsProps) {
                 {points.map((pt) => {
                     let selected = false;
                     if (props.selectedWorstPoint
-                        && props.selectedWorstPoint.lat === pt.gpxPoint.lat
-                        && props.selectedWorstPoint.lon === pt.gpxPoint.lon) {
+                        && props.selectedWorstPoint.lat === pt.point.lat
+                        && props.selectedWorstPoint.lon === pt.point.lon) {
                         selected = true;
                     }
                     return (<WorstPointsTableRow

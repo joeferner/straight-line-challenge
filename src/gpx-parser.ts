@@ -1,3 +1,5 @@
+import {Point} from "./geo-helpers";
+
 const gpxParser = require("../node_modules/gpxparser/src/GPXParser");
 
 export interface GpxMetadata {
@@ -91,8 +93,18 @@ export interface Gpx {
     routes: GpxRoute[];
 }
 
-export function gpxParse(str: string): Gpx | undefined {
+export function gpxParse(str: string): Gpx {
     const parser = new gpxParser();
     parser.parse(str);
     return parser as Gpx;
+}
+
+export function gpxFilterPoints(gpx: Gpx): Point[] {
+    const results = [];
+    for (const track of gpx.tracks) {
+        for (const point of track.points) {
+            results.push(point);
+        }
+    }
+    return results;
 }

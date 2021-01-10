@@ -1,13 +1,12 @@
 import {MapContainer, TileLayer, Polyline} from "react-leaflet";
-import {Arc, findClosestPointOnArc} from "./gpx-helpers";
+import {Arc, findClosestPointOnArc, Point} from "./geo-helpers";
 import React from "react";
 import {FitBoundsOptions, LatLngBounds, LatLngExpression} from "leaflet";
-import {Gpx, GpxPoint} from "./gpx-parser";
 
 export interface MapProps {
-    gpx: Gpx;
+    points: Point[];
     bestArc?: Arc;
-    selectedWorstPoint?: GpxPoint;
+    selectedWorstPoint?: Point;
 }
 
 export function Map(props: MapProps) {
@@ -30,23 +29,21 @@ export function Map(props: MapProps) {
     React.useEffect(() => {
         let bounds: LatLngBounds | undefined = undefined;
         const positions: LatLngExpression[] = [];
-        for (const track of props.gpx.tracks) {
-            for (const point of track.points) {
-                if (isNaN(point.lat) || isNaN(point.lon)) {
-                    continue;
-                }
-                const pt: [number, number] = [point.lat, point.lon];
-                positions.push(pt);
-                if (bounds) {
-                    bounds.extend(pt);
-                } else {
-                    bounds = new LatLngBounds(pt, pt);
-                }
+        for (const point of props.points) {
+            if (isNaN(point.lat) || isNaN(point.lon)) {
+                continue;
+            }
+            const pt: [number, number] = [point.lat, point.lon];
+            positions.push(pt);
+            if (bounds) {
+                bounds.extend(pt);
+            } else {
+                bounds = new LatLngBounds(pt, pt);
             }
         }
         setTrackPositions(positions);
         setBounds(bounds);
-    }, [props.gpx]);
+    }, [props.points]);
 
     React.useEffect(() => {
         if (props.selectedWorstPoint && props.bestArc) {
@@ -58,7 +55,7 @@ export function Map(props: MapProps) {
         } else {
             setWorstPointPolyPositions(undefined);
         }
-    }, [props.gpx, props.selectedWorstPoint, props.bestArc]);
+    }, [props.points, props.selectedWorstPoint, props.bestArc]);
 
     const boundsOptions: FitBoundsOptions = {
         padding: [10, 10]

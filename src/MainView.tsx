@@ -1,22 +1,21 @@
 import React from "react";
-import {Gpx, GpxPoint} from "./gpx-parser";
-import {Arc, calculateBestArc} from "./gpx-helpers";
+import {Arc, calculateBestArc, Point} from "./geo-helpers";
 import {ArcDisplay} from "./ArcDisplay";
 import {Typography} from "@material-ui/core";
 import {WorstPoints} from "./WorstPoints";
 import {Map} from "./Map";
 
 export interface MainViewProps {
-    gpx: Gpx;
+    points: Point[];
 }
 
 export function MainView(props: MainViewProps) {
     const [bestArc, setBestArc] = React.useState<Arc | undefined>(undefined);
-    const [selectedWorstPoint, setSelectedWorstPoint] = React.useState<GpxPoint | undefined>(undefined);
+    const [selectedWorstPoint, setSelectedWorstPoint] = React.useState<Point | undefined>(undefined);
 
     React.useEffect(() => {
-        setBestArc(calculateBestArc(props.gpx));
-    }, [props.gpx]);
+        setBestArc(calculateBestArc(props.points));
+    }, [props.points]);
 
     const handleWorstPointClick = React.useCallback((pt) => {
         setSelectedWorstPoint(pt);
@@ -33,13 +32,13 @@ export function MainView(props: MainViewProps) {
                 <Typography variant="h6">Worst Points</Typography>
                 {worstPointsArc ? (<WorstPoints
                     arc={worstPointsArc}
-                    gpx={props.gpx}
+                    points={props.points}
                     selectedWorstPoint={selectedWorstPoint}
                     onPointClick={handleWorstPointClick}/>) : null}
             </div>
             <div style={{flex: '50%'}}>
                 <Typography variant="h6">Map</Typography>
-                <Map gpx={props.gpx} bestArc={bestArc} selectedWorstPoint={selectedWorstPoint}/>
+                <Map points={props.points} bestArc={bestArc} selectedWorstPoint={selectedWorstPoint}/>
             </div>
         </div>
     </div>);
